@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  ground_control:
+    image: postgres:15-alpine
+    container_name: ground_control
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: sipnscrape
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - coffee_net
+
+  sip_api:
+    build: ./sip_api
+    container_name: sip_api
+    volumes:
+      - ./sip_api:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - ground_control
+    networks:
+      - coffee_net
+
+  java_script:
+    build: ./java_script
+    container_name: java_script_worker
+    volumes:
+      - ./java_script:/app
+    depends_on:
+      - sip_api
+    networks:
+      - coffee_net
+
+networks:
+  coffee_net:
+
+volumes:
+  postgres_data:
