@@ -1,26 +1,67 @@
+# pylint: disable=E0401
+"""
+Main FastApi application for sipnscrape
+Handles routers for coffee bean management and recommendation
+"""
+
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from . import models, schemas, database
+import crud
+import models
+import schemas
+import recommender
+from database import SESSION_LOCAL, ENGINE
 
-models.Base.metadata.create_all(bind=database.engine)
+models.Base.metadata.create_all(bind=ENGINE)
 
-app = FastAPI(title="SipNScrape API")
+app = FastAPI(title="sipnscrape API")
 
+def get_db():
+    """
+    Dependency that provides database session for each request
+    """
+    db = SESSION_LOCAL()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to SipNScrape. Ground Control is active."}
-
+    """
+    Health check endpoint to verify api is running
+    """
+    return {"status": "sipnscrape is brewing"}
 
 @app.post("/beans/", response_model=schemas.Bean)
-def create_bean(bean: schemas.BeanCreate, db: Session = Depends(database.get_db)):
-    db_bean = models.CoffeeBean(**bean.dict())
-    db.add(db_bean)
-    db.commit()
-    db.refresh(db_bean)
-    return db_bean
+def create_bean(bean: schemas.BeanCreate, db: Session = Depends(get_db)):
+    """
+    Create a new coffee bean entry
+    """
+    return crud.create_bean(db=db, bean=bean)
 
+@app.get("/beans/", response_model=list[schemas.Bean])
+def read_beans(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retrieve a paginated list of coffee beans
+    """
+    return crud.get_beans(db, skip=skip, limit=limit)
 
-@app.get("/beans/")
-def get_beans(db: Session = Depends(database.get_db)):
-    return db.query(models.CoffeeBean).all()
+@app.get("/beans/{bean_id}/recommendations", response_model=list[schemas.Bean])
+def get_recommendations(bean_id: int, db: Session = Depends(get_db), limit: int = 5):
+    """
+    Generate coffee recommendations based on taste note similarity
+    """
+    target_bean = db.query(models.Bean).filter(models.Bean.id == bean_id).first()
+    if not target_bean:
+        raise HTTPException(status_code=404, detail="Bean not found")
+
+    all_beans = db.query(models.Bean).filter(models.Bean.id != bean_id).all()
+
+    scored_beans = []
+    for b in all_beans:
+        score = recommender.calculate_similarity(target_bean.taste_notes, b.taste_notes)
+        scored_beans.append((score, b))
+
+    scored_beans.sort(key=lambda x: x[0], reverse=True)
+    return [b for score, b in scored_beans[:limit]]
