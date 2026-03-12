@@ -1,10 +1,9 @@
 {
   "name": "sipnscrape-worker",
   "version": "1.0.0",
-  "description": "Coffee scraper using Vibium",
-  "main": "scraper.js",
+  "main": "index.js",
   "dependencies": {
-    "vibium": "latest",
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "vibium": "latest"
   }
 }
