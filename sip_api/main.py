@@ -65,3 +65,8 @@ def get_recommendations(bean_id: int, db: Session = Depends(get_db), limit: int 
 
     scored_beans.sort(key=lambda x: x[0], reverse=True)
     return [b for score, b in scored_beans[:limit]]
+
+@app.delete("/beans/delete", tags=["Admin"])
+def delete_beans(db: Session = Depends(get_db)):
+    count = crud.delete_all_beans(db)
+    return {"message": f"Database wiped. {count} beans removed."}
