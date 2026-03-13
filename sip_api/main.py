@@ -57,8 +57,16 @@ def get_recommendations(bean_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Bean not found")
 
     all_beans = db.query(models.Bean).all()
-    
+
     return recommender.get_ranked_recommendations(target, all_beans)
+
+@app.get("/search", response_model=list[schemas.Bean])
+def search_beans(q: str, db: Session = Depends(get_db)):
+    """
+    Search for beans using natural language 
+    """
+    all_beans = db.query(models.Bean).all()
+    return recommender.semantic_search(q, all_beans)
 
 @app.delete("/beans/delete", tags=["Admin"])
 def delete_beans(db: Session = Depends(get_db)):

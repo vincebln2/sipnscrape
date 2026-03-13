@@ -57,3 +57,33 @@ def get_ranked_recommendations(target_bean, all_beans, limit=5):
     scored_beans.sort(key=lambda x: x.vibe_score, reverse=True)
 
     return scored_beans[:limit]
+
+def semantic_search(query: str, all_beans: list, limit=10):
+    """
+    Finds beans that match a natural language query.
+    """
+    if not all_beans:
+        return []
+
+    query_vec = model.encode([query.lower()])
+
+    def build_weighted_string(b):
+        notes_list = b.taste_notes if isinstance(b.taste_notes, list) else []
+        notes = " ".join(notes_list * 3)
+        roast = (str(b.roast_type or "") + " ") * 2
+        return f"{notes} {roast} {b.process or ''} {b.country or ''}".lower().strip()
+
+    descriptions = [build_weighted_string(b) for b in all_beans]
+    bean_vectors = model.encode(descriptions)
+
+    similarities = cosine_similarity(query_vec, bean_vectors)[0]
+
+    results = []
+    for i, score in enumerate(similarities):
+        bean = all_beans[i]
+        # Attach the search score
+        bean.vibe_score = round(float(score) * 100, 1)
+        results.append(bean)
+
+    results.sort(key=lambda x: x.vibe_score, reverse=True)
+    return results[:limit]
