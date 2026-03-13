@@ -15,6 +15,7 @@ async function runEngine() {
     console.log("Checking all bean links...");
 
     try {
+        // Reverted to local relative path
         const sources = JSON.parse(fs.readFileSync('./sources.json', 'utf8'));
 
         for (const source of sources) {
@@ -23,7 +24,6 @@ async function runEngine() {
             const urlObj = new URL(source.url);
             const baseUrl = `${urlObj.protocol}//${urlObj.hostname}`;
 
-            // Link Discovery (Fast HTML fetch via curl)
             const curlCmd = `curl -sL "${source.url}"`;
             const mainHtml = execSync(curlCmd, { encoding: 'utf8', maxBuffer: 1024 * 1024 * 2 });
 
@@ -36,11 +36,11 @@ async function runEngine() {
 
             console.log(`Found ${productUrls.length} unique bean links.`);
 
-            // JS Rendering via Vibium
             for (const beanUrl of productUrls) {
                 try {
                     console.log(`Checking: ${beanUrl.split('/').pop()}`);
                     
+                    // Reverted Vibium paths to local node_modules
                     execSync(`./node_modules/.bin/vibium go ${beanUrl} --headless`, { encoding: 'utf8' });
 
                     const titleDataRaw = execSync(`./node_modules/.bin/vibium go ${beanUrl} --headless --json`, { encoding: 'utf8' });
@@ -49,11 +49,9 @@ async function runEngine() {
                     const rawTitle = titleData.title || "";
                     let beanName = "Unknown Bean";
 
-                    // Sanitize Title: Strips branding and common separators
                     if (rawTitle.includes('–') || rawTitle.includes('|') || rawTitle.includes(' - ')) {
                         beanName = rawTitle.split('–')[0].split('|')[0].split(' - ')[0].trim();
                     } else {
-                        // Generate readable name from URL otherwise
                         const slug = beanUrl.split('/').pop();
                         beanName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                     }
@@ -61,7 +59,6 @@ async function runEngine() {
                     const detailText = execSync(`./node_modules/.bin/vibium text ${beanUrl} --headless`, { encoding: 'utf8', maxBuffer: 1024 * 1024 * 2 });
                     const lines = detailText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-                    // Taste Note Parsing
                     const nameIndex = lines.findIndex(l => l.includes(beanName));
                     const searchArea = nameIndex !== -1 ? lines.slice(nameIndex + 1, nameIndex + 10) : lines;
 

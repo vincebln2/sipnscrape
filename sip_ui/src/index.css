@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 32 35% 88%;
+    --foreground: 30 10% 15%;
+
+    --card: 36 33% 97%;
+    --card-foreground: 30 10% 15%;
+
+    --popover: 36 33% 97%;
+    --popover-foreground: 30 10% 15%;
+
+    --primary: 24 60% 23%;
+    --primary-foreground: 35 30% 96%;
+
+    --secondary: 30 20% 90%;
+    --secondary-foreground: 30 10% 20%;
+
+    --muted: 30 15% 92%;
+    --muted-foreground: 30 8% 50%;
+
+    --accent: 16 55% 42%;
+    --accent-foreground: 35 30% 96%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 30 18% 87%;
+    --input: 30 18% 87%;
+    --ring: 24 60% 23%;
+
+    --radius: 0.75rem;
+
+    --coffee-warm: 28 40% 50%;
+    --coffee-cream: 38 40% 92%;
+    --coffee-espresso: 25 30% 12%;
+    --coffee-stain: 16 45% 65%;
+    --coffee-latte: 35 35% 85%;
+
+    --sidebar-background: 35 25% 94%;
+    --sidebar-foreground: 30 10% 20%;
+    --sidebar-primary: 24 60% 23%;
+    --sidebar-primary-foreground: 35 30% 96%;
+    --sidebar-accent: 30 20% 88%;
+    --sidebar-accent-foreground: 30 10% 20%;
+    --sidebar-border: 30 18% 87%;
+    --sidebar-ring: 24 60% 23%;
+
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  .dark {
+    --background: 25 20% 8%;
+    --foreground: 35 20% 90%;
+
+    --card: 25 18% 12%;
+    --card-foreground: 35 20% 90%;
+
+    --popover: 25 18% 12%;
+    --popover-foreground: 35 20% 90%;
+
+    --primary: 30 45% 65%;
+    --primary-foreground: 25 20% 8%;
+
+    --secondary: 25 15% 18%;
+    --secondary-foreground: 35 20% 85%;
+
+    --muted: 25 12% 16%;
+    --muted-foreground: 30 10% 55%;
+
+    --accent: 16 50% 55%;
+    --accent-foreground: 25 20% 8%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 25 12% 20%;
+    --input: 25 12% 20%;
+    --ring: 30 45% 65%;
+
+    --coffee-warm: 28 35% 45%;
+    --coffee-cream: 30 15% 18%;
+    --coffee-espresso: 35 20% 90%;
+    --coffee-stain: 16 40% 50%;
+    --coffee-latte: 30 12% 22%;
+
+    --sidebar-background: 25 18% 10%;
+    --sidebar-foreground: 35 20% 85%;
+    --sidebar-primary: 30 45% 65%;
+    --sidebar-primary-foreground: 25 20% 8%;
+    --sidebar-accent: 25 12% 16%;
+    --sidebar-accent-foreground: 35 20% 85%;
+    --sidebar-border: 25 12% 20%;
+    --sidebar-ring: 30 45% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer components {
+  .coffee-grain {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  .vibe-ring {
+    background: conic-gradient(
+      hsl(var(--accent)) var(--vibe-percent),
+      hsl(var(--coffee-latte)) var(--vibe-percent)
+    );
+  }
+}

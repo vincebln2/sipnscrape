@@ -15,8 +15,9 @@ services:
     build: ./sip_api
     container_name: sip_api
     volumes:
-      - ./sip_api:/app
+      - .:/app 
       - torch_cache:/root/.cache/torch
+    working_dir: /app/sip_api
     ports:
       - "8000:8000"
     env_file:
@@ -26,6 +27,14 @@ services:
     networks:
       - coffee_net
 
+  sip_ui:
+    build: ./sip_ui
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sip_api
+    environment:
+      - VITE_API_URL=http://localhost:8000
 networks:
   coffee_net:
 

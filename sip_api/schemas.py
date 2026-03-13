@@ -15,7 +15,7 @@ class BeanBase(BaseModel):
     roaster: str
     roast_type: str
     taste_notes: List[str] = []
-    vibe_score: float = 0.0
+    vibe_score: Optional[float] = 0.0
     elevation: Optional[int] = None
     country: Optional[str] = None
     process: Optional[str] = None

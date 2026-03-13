@@ -1,9 +1,9 @@
-# pylint: disable=R0903
+# pylint: disable=R0903, E0401
 """
 SQLAlchemy models for sipnscrape
 Defines database schema for beans
 """
-from sqlalchemy import Column, Integer, String, JSON
+from sqlalchemy import Column, Integer, String, JSON, Float
 from database import Base
 
 class Bean(Base):
@@ -17,6 +17,7 @@ class Bean(Base):
     roaster = Column(String, index=True)
     roast_type = Column(String)
     taste_notes = Column(JSON, default=[])
+    vibe_score = Column(Float, nullable=True)
     elevation = Column(Integer, nullable=True)
     country = Column(String, index=True)
     process = Column(String)
