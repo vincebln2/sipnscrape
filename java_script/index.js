@@ -107,5 +107,4 @@ async function runEngine() {
     console.log("All tasks complete.");
 }
 
-// Entry point
 runEngine();

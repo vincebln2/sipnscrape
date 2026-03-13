@@ -16,6 +16,7 @@ services:
     container_name: sip_api
     volumes:
       - ./sip_api:/app
+      - torch_cache:/root/.cache/torch
     ports:
       - "8000:8000"
     env_file:
@@ -30,3 +31,4 @@ networks:
 
 volumes:
   postgres_data:
+  torch_cache:

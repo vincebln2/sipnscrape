@@ -48,25 +48,22 @@ def read_beans(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_beans(db, skip=skip, limit=limit)
 
 @app.get("/beans/{bean_id}/recommendations", response_model=list[schemas.Bean])
-def get_recommendations(bean_id: int, db: Session = Depends(get_db), limit: int = 5):
+def get_recommendations(bean_id: int, db: Session = Depends(get_db)):
     """
-    Generate coffee recommendations based on taste note similarity
+    Returns list of semantically related beans
     """
-    target_bean = db.query(models.Bean).filter(models.Bean.id == bean_id).first()
-    if not target_bean:
+    target = db.query(models.Bean).filter(models.Bean.id == bean_id).first()
+    if not target:
         raise HTTPException(status_code=404, detail="Bean not found")
 
-    all_beans = db.query(models.Bean).filter(models.Bean.id != bean_id).all()
-
-    scored_beans = []
-    for b in all_beans:
-        score = recommender.calculate_similarity(target_bean.taste_notes, b.taste_notes)
-        scored_beans.append((score, b))
-
-    scored_beans.sort(key=lambda x: x[0], reverse=True)
-    return [b for score, b in scored_beans[:limit]]
+    all_beans = db.query(models.Bean).all()
+    
+    return recommender.get_ranked_recommendations(target, all_beans)
 
 @app.delete("/beans/delete", tags=["Admin"])
 def delete_beans(db: Session = Depends(get_db)):
+    """
+    Deletes all beans in database
+    """
     count = crud.delete_all_beans(db)
     return {"message": f"Database wiped. {count} beans removed."}
