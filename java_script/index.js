@@ -15,7 +15,6 @@ async function runEngine() {
     console.log("Checking all bean links...");
 
     try {
-        // Reverted to local relative path
         const sources = JSON.parse(fs.readFileSync('./sources.json', 'utf8'));
 
         for (const source of sources) {
@@ -40,7 +39,6 @@ async function runEngine() {
                 try {
                     console.log(`Checking: ${beanUrl.split('/').pop()}`);
                     
-                    // Reverted Vibium paths to local node_modules
                     execSync(`./node_modules/.bin/vibium go ${beanUrl} --headless`, { encoding: 'utf8' });
 
                     const titleDataRaw = execSync(`./node_modules/.bin/vibium go ${beanUrl} --headless --json`, { encoding: 'utf8' });
@@ -57,8 +55,25 @@ async function runEngine() {
                     }
 
                     const detailText = execSync(`./node_modules/.bin/vibium text ${beanUrl} --headless`, { encoding: 'utf8', maxBuffer: 1024 * 1024 * 2 });
-                    const lines = detailText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                    const lowerText = detailText.toLowerCase();
 
+                    // --- IMPROVED ROAST DETECTION ---
+                    let detectedRoast = 'Medium';
+                    
+                    // We check for "Light Roast" or specific Light indicators first
+                    if (lowerText.includes('light roast') || lowerText.includes('light-medium')) {
+                        detectedRoast = 'Light';
+                    } else if (lowerText.includes('dark roast') || lowerText.includes('medium-dark')) {
+                        detectedRoast = 'Dark';
+                    } else if (lowerText.includes('medium roast')) {
+                        detectedRoast = 'Medium';
+                    } else {
+                        // Fallback to simple keyword check if the specific phrase "X Roast" isn't found
+                        if (lowerText.includes('light')) detectedRoast = 'Light';
+                        else if (lowerText.includes('dark')) detectedRoast = 'Dark';
+                    }
+
+                    const lines = detailText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
                     const nameIndex = lines.findIndex(l => l.includes(beanName));
                     const searchArea = nameIndex !== -1 ? lines.slice(nameIndex + 1, nameIndex + 10) : lines;
 
@@ -84,14 +99,15 @@ async function runEngine() {
                         roaster: source.roaster,
                         hyperlink: beanUrl,
                         taste_notes: notesArray,
-                        roast_type: detailText.toLowerCase().includes('dark') ? 'Dark' : (detailText.toLowerCase().includes('light') ? 'Light' : 'Medium'),
+                        roast_type: detectedRoast,
                         process: detailText.match(/(Washed|Honey|Natural|Anaerobic)\s+Process/i)?.[1] || "Washed",
                         elevation: detailText.match(/(\d{1,3},?\d{3})\s+MASL/i)?.[1]?.replace(',', '') || null,
-                        country: origins.find(o => beanName.toUpperCase().includes(o)) || "Blend"
+                        country: origins.find(o => beanName.toUpperCase().includes(o)) || "Blend",
+                        vibe_score: 0.0 // Ensure this matches your model
                     };
 
                     await axios.post(API_URL, beanData);
-                    console.log(`Synced: ${beanName} [${beanData.taste_notes.join(', ')}]`);
+                    console.log(`Synced: ${beanName} [Roast: ${detectedRoast}]`);
 
                 } catch (err) {
                     console.error(`Error with ${beanUrl}:`, err.message);
